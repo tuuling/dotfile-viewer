@@ -213,6 +213,94 @@ var sanitizeReports = function(reports) {
     return reports;    
 }
 
+
+var createGraphFromDigraph = function(digraph) {
+
+    var loopdiluup = function(tekst) {
+        var tagasi = [];
+
+        var tekstMassiiv = tekst.split("");
+
+        var start = 0;
+        for (var i = 0; i < tekstMassiiv.length; i++) {
+            switch (tekstMassiiv[i]) {
+                case '{':
+                    //find matching parenthesis
+                    var count = 0;
+                    for (var j = i + 1; j < tekstMassiiv.length; j++) {
+
+                        if(tekstMassiiv[j] === '}' && count === 0) {
+                            i = j;
+                            break;
+                        }
+
+                        if(tekstMassiiv[j] === '{') {
+                            count++;
+                        } else if(tekstMassiiv[j] === '}') {
+                            count--;
+                        }
+
+                    }
+                    break;
+                case '|':
+                    tagasi.push(tekst.substring(start, i).trim());
+                    start = i + 1;
+
+                    break;
+            }
+            if(i + 1 === tekstMassiiv.length) {
+                tagasi.push(tekst.substring(start, i + 1).trim());
+            }
+        }
+
+        for (var i = 0; i < tagasi.length; i++) {
+            if(tagasi[i].charAt(0) === '{') {
+                tagasi[i] = loopdiluup(tagasi[i].slice(1, -1));
+            }
+        }
+
+        return tagasi;
+    };
+
+    // Create nodes
+    var nodes = {};
+    for (var i = 0; i < digraph.nodes().length; i++) {
+
+        var id = digraph.nodes()[i];
+
+        nodes[id] = new Node(id);
+        nodes[id].params = digraph.node(id);
+        if(nodes[id].params.label) {
+            nodes[id].params.label = loopdiluup(nodes[id].params.label);
+        }
+
+    }
+
+    // Second link the nodes together
+    for (var nodeid in nodes) {
+        var node = nodes[nodeid];
+
+        digraph.successors(node.id).forEach(function(childid) {
+            node.addChild(nodes[childid])
+        });
+
+        digraph.predecessors(node.id).forEach(function(parentid) {
+            node.addParent(nodes[parentid])
+        });
+
+    }
+
+    // Create the graph and add the nodes
+    var graph = new Graph();
+    for (var id in nodes) {
+        graph.addNode(nodes[id]);
+    }
+
+    console.log("Done creating graph from reports");
+    return graph;
+
+};
+
 var createGraphFromReports = function(reports, params) {
     console.log("Creating graph from reports");
 

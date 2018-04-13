@@ -71,25 +71,27 @@ function DirectedAcyclicGraph() {
      */
     var width = d3.functor("100%");
     var height = d3.functor("100%");
-    var edgeid = function(d) { return d.source.id + d.target.id; }
-    var nodeid = function(d) { return d.id; }
-    var nodename = function(d) { return d.report["Agent"] ? d.report["Agent"][0] : ""; }
-    var getnodes = function(d) { return d.getVisibleNodes(); }
-    var getedges = function(d) { return d.getVisibleLinks(); }
+    var edgeid = function(d) { return d.source.id + d.target.id; };
+    var nodeid = function(d) { return d.id; };
+    var nodename = function(d) { return d.params.label; };
+    var getnodes = function(d) { return d.getVisibleNodes(); };
+    var getedges = function(d) { return d.getVisibleLinks(); };
     var bbox = function(d) {
         return d3.select(this).select("rect").node().getBBox();
-    }
+    };
     var drawnode = function(d) {
         // Attach the DOM elements
         var rect = d3.select(this).append("rect");
         var text = d3.select(this).append("text").attr("text-anchor", "middle").attr("x", 0);
         text.append("tspan").attr("x", 0).attr("dy", "1em").text(nodeid);
-        text.append("tspan").attr("x", 0).attr("dy", "1.1em").text(nodename);
+        // text.append("tspan").attr("x", 0).attr("dy", "1.1em").text(nodename);
         var prior_pos = nodepos.call(this, d);
         if (prior_pos!=null) {
             d3.select(this).attr("transform", graph.nodeTranslate);
         }
-    }    
+
+
+    };
     var sizenode = function(d) {
         // Because of SVG weirdness, call sizenode as necessary to ensure a node's size is correct
         var node_bbox = {"height": 50, "width": 200};
@@ -98,7 +100,7 @@ function DirectedAcyclicGraph() {
         rect.attr("x", -node_bbox.width/2).attr("y", -node_bbox.height/2)
         rect.attr("width", node_bbox.width).attr("height", node_bbox.height);
         text.attr("x", -text_bbox.width/2).attr("y", -text_bbox.height/2);
-    }
+    };
     var removenode = function(d) {
         if (animate) {
             d3.select(this).classed("visible", false).transition().duration(200).remove();
@@ -125,9 +127,7 @@ function DirectedAcyclicGraph() {
         // Call dagre layout.  Store layout data such that calls to x(), y() and points() will return them
         start = new Date().getTime();
 
-        var dagreObj = dagre.layout();
-
-        dagreObj.nodeSep(20).edgeSep(5).rankSep(20).nodes(nodes_d).edges(edges_d).run();
+        dagre.layout().nodeSep(20).edgeSep(10).rankSep(100).nodes(nodes_d).edges(edges_d).run();
 
 
         console.log("layout:dagre", (new Date().getTime() - start));
@@ -137,7 +137,7 @@ function DirectedAcyclicGraph() {
             var p = d.dagre.points;
             p.push(dagre.util.intersectRect(d.target.dagre, p.length > 0 ? p[p.length - 1] : d.source.dagre));
             p.splice(0, 0, dagre.util.intersectRect(d.source.dagre, p[0]));
-            p[0].y -= 0.5; p[p.length-1].y += 0.5; 
+            p[0].y -= 0.5; p[p.length-1].y += 0.5;
         });
         
         // Try to put the graph as close to previous position as possible

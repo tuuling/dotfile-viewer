@@ -1,9 +1,9 @@
 // lightweight is an optional argument that will try to draw the graph as fast as possible
-function XTraceDAG(attachPoint, reports, /*optional*/ params) {
+function XTraceDAG(attachPoint, digraph, /*optional*/ params) {
     var dag = this;
     
     // Get the necessary parameters
-    var lightweight = params.lightweight ? true : false;
+    var lightweight = false;
     
     // Twiddle the attach point a little bit
     var rootSVG = d3.select(attachPoint).append("svg").attr("width", "100%").attr("height", "100%");
@@ -13,7 +13,8 @@ function XTraceDAG(attachPoint, reports, /*optional*/ params) {
     var listSVG = rootSVG.append("svg").attr("class", "history-attach");
     
     // Create the graph and history representations
-    var graph = createGraphFromReports(reports, params);
+    // var graph = createGraphFromReports(reports, params);
+    var graph = createGraphFromDigraph(digraph);
     var history = DirectedAcyclicGraphHistory();
     
     
@@ -222,7 +223,7 @@ function XTraceDAG(attachPoint, reports, /*optional*/ params) {
         minimapSVG.datum(graphSVG.node()).call(DAGMinimap);  // Draw a Minimap at the minimap attach
         console.log("draw minimap", new Date().getTime() - start);
         start = (new Date()).getTime();
-        graphSVG.selectAll(".node").call(DAGTooltip);        // Attach tooltips
+        // graphSVG.selectAll(".node").call(DAGTooltip);        // Attach tooltips
         console.log("draw tooltips", new Date().getTime() - start);
         start = (new Date()).getTime();
         setupEvents();                      // Set up the node selection events
@@ -244,7 +245,8 @@ function XTraceDAG(attachPoint, reports, /*optional*/ params) {
 
     // Save important variables
     this.attachPoint = attachPoint;
-    this.reports = reports;
+    // this.reports = reports;
+    this.digraph = digraph;
     this.DAG = DAG
     this.DAGMinimap = DAGMinimap;
     this.DAGHistory = DAGHistory;
