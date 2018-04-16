@@ -25,12 +25,6 @@
 <script>
 window.onload = function() {
 
-    // jQuery.get('nodeads.dot').done(function (data) {
-    //     var digraph = graphlibDot.read(data);
-    //
-    //     window.xtrace = new XTraceDAG(document.body, digraph);
-    // });
-
     $("#redraw").on('click', function () {
 
         var digraph = graphlibDot.read($("#dotfile").val());

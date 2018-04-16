@@ -216,52 +216,6 @@ var sanitizeReports = function(reports) {
 
 var createGraphFromDigraph = function(digraph) {
 
-    var loopdiluup = function(tekst) {
-        var tagasi = [];
-
-        var tekstMassiiv = tekst.split("");
-
-        var start = 0;
-        for (var i = 0; i < tekstMassiiv.length; i++) {
-            switch (tekstMassiiv[i]) {
-                case '{':
-                    //find matching parenthesis
-                    var count = 0;
-                    for (var j = i + 1; j < tekstMassiiv.length; j++) {
-
-                        if(tekstMassiiv[j] === '}' && count === 0) {
-                            i = j;
-                            break;
-                        }
-
-                        if(tekstMassiiv[j] === '{') {
-                            count++;
-                        } else if(tekstMassiiv[j] === '}') {
-                            count--;
-                        }
-
-                    }
-                    break;
-                case '|':
-                    tagasi.push(tekst.substring(start, i).trim());
-                    start = i + 1;
-
-                    break;
-            }
-            if(i + 1 === tekstMassiiv.length) {
-                tagasi.push(tekst.substring(start, i + 1).trim());
-            }
-        }
-
-        for (var i = 0; i < tagasi.length; i++) {
-            if(tagasi[i].charAt(0) === '{') {
-                tagasi[i] = loopdiluup(tagasi[i].slice(1, -1));
-            }
-        }
-
-        return tagasi;
-    };
-
     // Create nodes
     var nodes = {};
     for (var i = 0; i < digraph.nodes().length; i++) {
@@ -271,7 +225,8 @@ var createGraphFromDigraph = function(digraph) {
         nodes[id] = new Node(id);
         nodes[id].params = digraph.node(id);
         if(nodes[id].params.label) {
-            nodes[id].params.label = loopdiluup(nodes[id].params.label);
+            nodes[id].params.label = jQuery.parseHTML(nodes[id].params.label)[0].textContent;
+            nodes[id].params.label = nodes[id].params.label.replace(/\\</g, '<').replace(/\\>/g, '>')
         }
 
     }
@@ -301,59 +256,6 @@ var createGraphFromDigraph = function(digraph) {
 
 };
 
-var createGraphFromReports = function(reports, params) {
-    console.log("Creating graph from reports");
-
-    // Filter hideagent elements
-    if (params["hideagent"]) {
-        console.info("Hiding agent", params["hideagent"], "in", reports.length, "reports");
-        reports = filter_agent_reports(reports, params["hideagent"]);
-    }
-    
-    // Filter 'merge' elements
-    console.info("Removing 'merge' operations in", reports.length, "reports");
-    reports = filter_merge_reports(reports);
-        
-    // Filter yarnchild reports
-    if (params["mapreduceonly"]) {
-        console.info("Filtering mapreduce reports in", reports.length, "reports");
-        reports = filter_yarnchild_reports(reports);
-    }
-    
-    // Create nodes
-    console.info("Creating graph nodes");
-    var nodes = {};
-    for (var i = 0; i < reports.length; i++) {
-        var report = reports[i];
-        if (!report.hasOwnProperty("X-Trace")) {
-            console.error("Bad report found with no ID:", report);
-        }
-        var id = report["X-Trace"][0].substr(18);
-        nodes[id] = new Node(id);
-        nodes[id].report = report;
-    }
-    
-    // Second link the nodes together
-    console.info("Linking graph nodes");
-    for (var nodeid in nodes) {
-        var node = nodes[nodeid];
-        node.report["Edge"].forEach(function(parentid) {
-            if (nodes[parentid]) {
-                nodes[parentid].addChild(node);
-                node.addParent(nodes[parentid]);
-            }
-        })
-    }
-    
-    // Create the graph and add the nodes
-    var graph = new Graph();
-    for (var id in nodes) {
-        graph.addNode(nodes[id]);
-    }
-    
-    console.log("Done creating graph from reports");
-    return graph;
-}
 
 var createJSONFromVisibleGraph = function(graph) {
     var nodes = graph.getVisibleNodes();

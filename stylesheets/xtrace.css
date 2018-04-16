@@ -44,6 +44,32 @@
 	stroke: #A16D00;
 }
 
+.graph .node rect.color-white {
+	fill: #FFF;
+	stroke: #888888;
+}
+
+.graph .node rect.color-red {
+	fill: #f4b4b4;
+	stroke: #921616;
+}
+
+.graph .node rect.color-yellow {
+	fill: #f6eeb1;
+	stroke: #978712;
+}
+
+.graph .node rect.color-green {
+	fill: #b1f6b1;
+	stroke: #076d09;
+}
+
+.graph .node rect.color-blue {
+	fill: #8ecaf5;
+	stroke: #46657a;
+}
+
+
 .graph.animate .node rect {
 	transition: fill 0.5s, stroke 0.5s, stroke-width 0.5s;
 	-webkit-transition: fill 0.5s, stroke 0.5s, stroke-width 0.5s;
@@ -51,6 +77,7 @@
 
 .graph .node text {
 	font-family: Verdana;
+	font-size: 30px;
 }
 
 .graph .node.selected rect,.hovering .graph .node.selected rect,.hovering .graph .node.selected.hovered.immediate rect
@@ -67,7 +94,7 @@
 .graph .edge {
 	fill: none;
 	stroke-width: 2.5px;
-	stroke: #D19D00;
+	stroke: #888888;
 	opacity: 0;
 }
 
