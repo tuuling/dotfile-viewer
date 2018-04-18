@@ -61,6 +61,7 @@ function DirectedAcyclicGraph() {
             }
             
             new_nodes.each(newnodetransition);
+            new_nodes.each(sizenodes);
             new_labels.each(positionLabel);
             new_edges.attr("d", graph.splineGenerator).classed("visible", true);
             existing_nodes.classed("visible", true);
@@ -112,6 +113,14 @@ function DirectedAcyclicGraph() {
             .attr("x", text.node().getBBox().x)
             .attr("y", text.node().getBBox().y);
 
+    };
+
+    var sizenodes = function (d) {
+        d3.select(this).select('rect')
+            .attr("width", d.dagre.width)
+            .attr("height", d.dagre.height)
+            .attr("x", -d.dagre.width/2)
+            .attr("y", -d.dagre.height/2);
     };
 
     var positionLabel = function (d) {
