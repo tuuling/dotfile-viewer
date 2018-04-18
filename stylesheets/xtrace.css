@@ -28,7 +28,8 @@
 	-webkit-transition: fill 0.5s, stroke 0.5s, opacity 0.4s;
 }
 
-.hovering .graph .node.visible.hovered,.hovering .graph .node.visible.selected
+.hovering .graph .node.visible.hovered,
+.hovering .graph .node.visible.selected
 	{
 	opacity: 1;
 }
@@ -80,7 +81,9 @@
 	font-size: 30px;
 }
 
-.graph .node.selected rect,.hovering .graph .node.selected rect,.hovering .graph .node.selected.hovered.immediate rect
+.graph .node.selected rect,
+.hovering .graph .node.selected rect,
+.hovering .graph .node.selected.hovered.immediate rect
 	{
 	stroke: #0F4BFF;
 	fill: #B3ECFF;
@@ -109,28 +112,37 @@
 	stroke: #9A38A2;
 }
 
-.graph .edge.visible.selected,.hovering .graph .edge.hovered.immediate.selected
+.graph .edge.visible.selected,
+.hovering .graph .edge.hovered.immediate.selected,
+.graph .edgelabel.visible.selected,
+.hovering .graph .edgelabel.hovered.immediate.selected
 	{
 	stroke-width: 6px;
 	stroke: #386AFF;
 }
 
-.graph .edge.visible.preview,.hovering .graph .edge.hovered.immediate.preview
+.graph .edge.visible.preview,
+.hovering .graph .edge.hovered.immediate.preview,
+.graph .edgelabel.visible.preview,
+.hovering .graph .edgelabel.hovered.immediate.preview
 	{
 	stroke: #9A38A2;
 }
 
-.graph .edge.visible {
+.graph .edge.visible,
+.graph .edgelabel.visible{
 	opacity: 1;
 }
 
-.graph.animate .edge.visible {
+.graph.animate .edge.visible,
+.graph.animate .edgelabel.visible{
 	transition: fill 0.5s, stroke 0.5s, stroke-width 0.5s, opacity 0.5s;
 	-webkit-transition: fill 0.5s, stroke 0.5s, stroke-width 0.5s, opacity
 		0.5s;
 }
 
-.graph.animate .edge.visible.entering {
+.graph.animate .edge.visible.entering,
+.graph.animate .edgelabel.visible.entering{
 	transition: fill 0.5s, stroke 0.5s, stroke-width 0.5s, opacity 1.5s;
 	transition-delay: 0, 0, 0, 0.5s;
 	-webkit-transition: fill 0.5s, stroke 0.5s, stroke-width 0.5s, opacity
@@ -138,21 +150,37 @@
 	-webkit-transition-delay: 0, 0, 0, 0.5s;
 }
 
-.hovering .graph .edge.visible {
+.graph .edgelabel {
+	font-family: Verdana;
+	font-size: 30px;
+}
+
+.graph .edgelabel rect {
+	fill: white;
+	stroke: none;
+}
+
+.hovering .graph .edge.visible,
+.hovering .graph .edgelabel.visible{
 	opacity: 0.1;
 }
 
-.hovering .graph.animate .edge.visible {
+.hovering .graph.animate .edge.visible,
+.hovering .graph.animate .edgelabel.visible{
 	transition: fill 0.5s, stroke 0.5s, stroke-width 0.5s, opacity 0.4s;
 	-webkit-transition: fill 0.5s, stroke 0.5s, stroke-width 0.5s, opacity
 		0.4s;
 }
 
-.hovering .graph .edge.visible.hovered,.hovering .graph .edge.selected {
+.hovering .graph .edge.visible.hovered,
+.hovering .graph .edge.selected,
+.hovering .graph .edgelabel.visible.hovered,
+.hovering .graph .edgelabel.selected{
 	opacity: 1;
 }
 
-.hovering .graph .edge.hovered.immediate {
+.hovering .graph .edge.hovered.immediate,
+.hovering .graph .edgelabel.hovered.immediate{
 	stroke: #A4011B;
 	stroke-width: 4px;
 }

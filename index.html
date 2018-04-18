@@ -27,7 +27,15 @@ window.onload = function() {
 
     $("#redraw").on('click', function () {
 
+        $('svg').remove();
+
         var digraph = graphlibDot.read($("#dotfile").val());
+        digraph.setGraph({
+            nodesep: $("#graph-nodesep").val(),
+            edgesep: $("#graph-edgesep").val(),
+            ranksep: $("#graph-ranksep").val(),
+            ranker: $("#graph-ranker").val()
+        });
 
         window.xtrace = new XTraceDAG(document.body, digraph);
 
@@ -38,8 +46,23 @@ window.onload = function() {
 </head>
 <body width="100%" height="100%" style="margin: 0">
     <div style="position: absolute;">
-        <textarea id="dotfile" name="" cols="30" rows="10"></textarea>
+        <textarea id="dotfile" name="" cols="30" rows="10"></textarea><br>
+        <label for="graph-ranker">ranker: </label>
+        <select name="graph-ranker" id="graph-ranker">
+            <option value="network-simplex">network-simplex</option>
+            <option value="tight-tree">tight-tree</option>
+            <option value="longest-path">longest-path</option>
+        </select>
         <br>
+        <label for="graph-nodesep">Distance between nodes horizontally: </label>
+        <input type="text" id="graph-nodesep" name="graph-nodesep" value="50">
+        <br>
+        <label for="graph-nodesep">Distance between edges horizontally: </label>
+        <input type="text" id="graph-edgesep" name="graph-edgesep" value="10">
+        <br>
+        <label for="graph-nodesep">Distance between ranks vertically: </label>
+        <input type="text" id="graph-ranksep" name="graph-ranksep" value="50">
+        <br><br>
         <button id="redraw"> redraw</button>
     </div>
 </body>

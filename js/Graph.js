@@ -99,15 +99,30 @@ Node.prototype.getVisibleChildren = function() {
     return values(visible_children_map[this.id]);
 }
 
-var Graph = function() {
+var Edge = function(id, source, target) {
+    this.id = id;
+
+    this.source = source;
+    this.target = target;
+};
+
+var Graph = function(digraph) {
     // Default values for internal variables
-    this.nodelist = []
+    this.digraph = digraph;
+    this.nodelist = [];
     this.nodes = {};
+    this.edgelist = [];
+    this.edges = {};
 }
 
 Graph.prototype.addNode = function(node) {
     this.nodelist.push(node);
     this.nodes[node.id] = node;
+}
+
+Graph.prototype.addEdge = function(edge) {
+    this.edgelist.push(edge);
+    this.edges[edge.id] = edge;
 }
 
 Graph.prototype.getNode = function(id) {
@@ -120,7 +135,15 @@ Graph.prototype.getNodes = function() {
 
 Graph.prototype.getVisibleNodes = function() {
     return this.nodelist.filter(function(node) { return node.visible(); });
-}
+};
+
+Graph.prototype.getVisibleEdges = function() {
+  return this.edgelist;
+};
+
+Graph.prototype.getVisibleLabels = function() {
+    return this.edgelist.filter(function(edge) { return edge.params.label ? edge : false; });
+};
 
 Graph.prototype.getVisibleLinks = function() {
     var visible_parent_map = {};

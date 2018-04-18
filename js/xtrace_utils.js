@@ -245,10 +245,26 @@ var createGraphFromDigraph = function(digraph) {
 
     }
 
+    // create Edges
+    var edges = {};
+    for (var i = 0; i < digraph.edges().length; i++) {
+
+       var edge = digraph.edges()[i];
+       var edgeid = edge.v + edge.w;
+
+       edges[edgeid] = new Edge(edgeid, nodes[edge.v], nodes[edge.w]);
+       edges[edgeid].params = digraph.edge(edge);
+
+    }
+
     // Create the graph and add the nodes
-    var graph = new Graph();
+    var graph = new Graph(digraph);
     for (var id in nodes) {
         graph.addNode(nodes[id]);
+    }
+
+    for (var id in edges) {
+        graph.addEdge(edges[id]);
     }
 
     console.log("Done creating graph from reports");

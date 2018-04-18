@@ -2,7 +2,7 @@ function DirectedAcyclicGraph() {
     
     var layout_count = 0;
     var animate = true;
-    
+
     /*
      * Main rendering function
      */
@@ -19,19 +19,25 @@ function DirectedAcyclicGraph() {
             // Get the edges and nodes from the data.  Can have user-defined accessors
             var edges = getedges.call(this, data);
             var nodes = getnodes.call(this, data);
+            var labels = getlabels.call(this, data);
             
             // Get the existing nodes and edges, and recalculate the node size
             var existing_edges = svg.select(".graph").selectAll(".edge").data(edges, edgeid);
             var existing_nodes = svg.select(".graph").selectAll(".node").data(nodes, nodeid);
+            var existing_labels = svg.select(".graph").selectAll(".edgelabel").data(labels, edgeid);
             
             var removed_edges = existing_edges.exit();
             var removed_nodes = existing_nodes.exit();
+            var removed_labels = existing_labels.exit();
             
             var new_edges = existing_edges.enter().insert("path", ":first-child").attr("class", "edge entering");
             var new_nodes = existing_nodes.enter().append("g").attr("class", "node entering");
-            
+            var new_labels = existing_labels.enter().append("g").attr("class", "edgelabel");
+
             // Draw new nodes
             new_nodes.each(drawnode);
+            new_labels.each(drawLabel);
+
             existing_nodes.each(sizenode);
             removed_nodes.each(removenode);
             if (animate) {
@@ -42,7 +48,7 @@ function DirectedAcyclicGraph() {
             
             // Do the layout
             existing_nodes.classed("pre-existing", true);
-            layout.call(svg.select(".graph").node(), nodes, edges);
+            layout.call(svg.select(".graph").node(), nodes, edges, data.digraph);
             existing_nodes.classed("pre-existing", false);
             
             // Animate into new positions
@@ -51,12 +57,14 @@ function DirectedAcyclicGraph() {
                 existing_nodes.transition().duration(800).attr("transform", graph.nodeTranslate);
             } else {
                 svg.select(".graph").selectAll(".edge.visible").attr("d", graph.splineGenerator);      
-                existing_nodes.attr("transform", graph.nodeTranslate);         
+                existing_nodes.attr("transform", graph.nodeTranslate);
             }
             
             new_nodes.each(newnodetransition);
+            new_labels.each(positionLabel);
             new_edges.attr("d", graph.splineGenerator).classed("visible", true);
             existing_nodes.classed("visible", true);
+            new_labels.classed("visible", true);
             window.setTimeout(function() {
                 new_edges.classed("entering", false);
                 new_nodes.classed("entering", false);
@@ -75,7 +83,8 @@ function DirectedAcyclicGraph() {
     var nodeid = function(d) { return d.id; };
     var nodename = function(d) { return d.params.label; };
     var getnodes = function(d) { return d.getVisibleNodes(); };
-    var getedges = function(d) { return d.getVisibleLinks(); };
+    var getedges = function(d) { return d.getVisibleEdges(); };
+    var getlabels = function (d) { return d.getVisibleLabels(); };
     var bbox = function(d) {
         return d3.select(this).select("rect").node().getBBox();
     };
@@ -89,16 +98,34 @@ function DirectedAcyclicGraph() {
         if (prior_pos!=null) {
             d3.select(this).attr("transform", graph.nodeTranslate);
         }
+    };
 
+    var drawLabel = function(d) {
+        var rect = d3.select(this).append("rect").attr("x", 0).attr("y", 0);
+        var text = d3.select(this).append("text")
+            .attr("text-anchor", "middle")
+            .text(function (d) {return d.params.label;});
+
+        rect
+            .attr("width", text.node().getBBox().width)
+            .attr("height", text.node().getBBox().height)
+            .attr("x", text.node().getBBox().x)
+            .attr("y", text.node().getBBox().y);
 
     };
+
+    var positionLabel = function (d) {
+
+        d3.select(this).attr("transform", "translate(" + d.dagre.x + "," + d.dagre.y + ")")
+    };
+
     var sizenode = function(d) {
         // Because of SVG weirdness, call sizenode as necessary to ensure a node's size is correct
 
         var rect = d3.select(this).select('rect'),
             text = d3.select(this).select('text');
         var text_bbox = {"height": 40, "width": 190};
-        var node_bbox = {"height": 50, "width": Math.max(200, text[0][0].getBBox().width  + 10)};
+        var node_bbox = {"height": 50, "width": Math.max(200, text.node().getBBox().width  + 10)};
         rect.attr("x", -node_bbox.width/2).attr("y", -node_bbox.height/2);
         rect.attr("width", node_bbox.width).attr("height", node_bbox.height);
         text.attr("x", -text_bbox.width/2).attr("y", -node_bbox.height/2);
@@ -113,59 +140,119 @@ function DirectedAcyclicGraph() {
     var newnodetransition = function(d) {
         d3.select(this).classed("visible", true).attr("transform", graph.nodeTranslate);
     }
-    var  layout = function(nodes_d, edges_d) {
+    var  layout = function(nodes_d, edges_d, digraph) {
+
+        var intersectRect = function(rect, point) {
+            var x = rect.x;
+            var y = rect.y;
+
+            // For now we only support rectangles
+
+            // Rectangle intersection algorithm from:
+            // http://math.stackexchange.com/questions/108113/find-edge-between-two-boxes
+            var dx = point.x - x;
+            var dy = point.y - y;
+            var w = rect.width / 2;
+            var h = rect.height / 2;
+
+            var sx, sy;
+            if (Math.abs(dy) * w > Math.abs(dx) * h) {
+                // Intersection is top or bottom of rect.
+                if (dy < 0) {
+                    h = -h;
+                }
+                sx = dy === 0 ? 0 : h * dx / dy;
+                sy = h;
+            } else {
+                // Intersection is left or right of rect.
+                if (dx < 0) {
+                    w = -w;
+                }
+                sx = w;
+                sy = dx === 0 ? 0 : w * dy / dx;
+            }
+
+            return {x: x + sx, y: y + sy};
+        };
+
+
         // Dagre requires the width, height, and bbox of each node to be attached to that node's data
         var start = new Date().getTime();
         d3.select(this).selectAll(".node").each(function(d) {
             d.bbox = bbox.call(this, d);
             d.width = d.bbox.width;
             d.height = d.bbox.height;
+
+            digraph.node(d.id).width = d.width;
+            digraph.node(d.id).height = d.height;
+
             d.dagre_prev = d.dagre_id==layout_count ? d.dagre : null;
             d.dagre_id = layout_count+1;
         });
         layout_count++;
+
+        d3.select(this).selectAll(".edgelabel").each(function(d) {
+            var label_bbox = d3.select(this).select('text').node().getBBox();
+
+            digraph.edge(d.source.id, d.target.id).width = label_bbox.width;
+            digraph.edge(d.source.id, d.target.id).height = label_bbox.height;
+            digraph.edge(d.source.id, d.target.id).labelpos = 'c';
+        });
+
         console.log("layout:bbox", (new Date().getTime() - start));
         
         // Call dagre layout.  Store layout data such that calls to x(), y() and points() will return them
         start = new Date().getTime();
 
-        dagre.layout().nodeSep(20).edgeSep(10).rankSep(100).nodes(nodes_d).edges(edges_d).run();
+        // dagre.layout().nodeSep(20).edgeSep(10).rankSep(100).nodes(nodes_d).edges(edges_d).run();
 
+        dagre.layout(digraph);
+
+        nodes_d.forEach(function (node) {
+           node.dagre = digraph.node(node.id);
+        });
+
+        edges_d.forEach(function (edge) {
+            edge.dagre = digraph.edge(edge.source.id, edge.target.id);
+        });
 
         console.log("layout:dagre", (new Date().getTime() - start));
         
-        // Also we want to make sure that the control points for all the edges overlap the nodes nicely
-        d3.select(this).selectAll(".edge").each(function(d) {
-            var p = d.dagre.points;
-            p.push(dagre.util.intersectRect(d.target.dagre, p.length > 0 ? p[p.length - 1] : d.source.dagre));
-            p.splice(0, 0, dagre.util.intersectRect(d.source.dagre, p[0]));
-            p[0].y -= 0.5; p[p.length-1].y += 0.5;
-        });
+        // // Also we want to make sure that the control points for all the edges overlap the nodes nicely
+        // d3.select(this).selectAll(".edge").each(function(d) {
+        //     var p = d.dagre.points;
+        //     p.push(intersectRect(d.target.dagre, p.length > 0 ? p[p.length - 1] : d.source.dagre));
+        //     p.splice(0, 0, intersectRect(d.source.dagre, p[0]));
+        //     p[0].y -= 0.5; p[p.length-1].y += 0.5;
+        // });
         
-        // Try to put the graph as close to previous position as possible
-        var count = 0, x = 0, y = 0;
-        d3.select(this).selectAll(".node.pre-existing").each(function(d) {
-            if (d.dagre_prev) {
-                count++;
-                x += (d.dagre_prev.x - d.dagre.x);
-                y += (d.dagre_prev.y - d.dagre.y);
-            }
-        });
-        if (count > 0) {
-            x = x / count;
-            y = y / count;
-            d3.select(this).selectAll(".node").each(function(d) {
-                d.dagre.x += x;
-                d.dagre.y += y;
-            })
-            d3.select(this).selectAll(".edge").each(function(d) {
-                d.dagre.points.forEach(function(p) {
-                    p.x += x;
-                    p.y += y;
-                })
-            })
-        }
-    }
+        // // Try to put the graph as close to previous position as possible
+        // var count = 0, x = 0, y = 0;
+        // d3.select(this).selectAll(".node.pre-existing").each(function(d) {
+        //     if (d.dagre_prev) {
+        //         count++;
+        //         x += (d.dagre_prev.x - d.dagre.x);
+        //         y += (d.dagre_prev.y - d.dagre.y);
+        //     }
+        // });
+        // if (count > 0) {
+        //     x = x / count;
+        //     y = y / count;
+        //     d3.select(this).selectAll(".node").each(function(d) {
+        //         d.dagre.x += x;
+        //         d.dagre.y += y;
+        //     })
+        //     d3.select(this).selectAll(".edge").each(function(d) {
+        //         d.dagre.points.forEach(function(p) {
+        //             p.x += x;
+        //             p.y += y;
+        //         })
+        //     })
+        // }
+    };
+
+
+
     var nodepos = function(d) {
         // Returns the {x, y} location of a node after layout
         return d.dagre;
@@ -180,7 +267,7 @@ function DirectedAcyclicGraph() {
      * A couple of private non-settable functions
      */
     graph.splineGenerator = function(d) {
-        return d3.svg.line().x(function(d) { return d.x }).y(function(d) { return d.y }).interpolate("basis")(edgepos.call(this, d));
+        return d3.svg.line().x(function(d) { return d.x }).y(function(d) { return d.y }).interpolate("linear")(edgepos.call(this, d));
     }
     
     graph.edgeTween = function(d) {
@@ -200,7 +287,7 @@ function DirectedAcyclicGraph() {
             return d3.interpolate([p0.x, p0.y], [p1.x, p1.y]);
         });
 
-        var line = d3.svg.line().interpolate("basis");
+        var line = d3.svg.line().interpolate("linear");
         
         return function(t) {
             return line(points.map(function(p) { return p(t); }));

@@ -32,7 +32,8 @@ function XTraceDAG(attachPoint, digraph, /*optional*/ params) {
         graphSVG.select(".graph").attr("transform","translate("+t[0]+","+t[1]+") scale("+scale+")");
         minimapSVG.select('.viewfinder').attr("x", -t[0]/scale).attr("y", -t[1]/scale).attr("width", attachPoint.offsetWidth/scale).attr("height", attachPoint.offsetHeight/scale);
         if (!lightweight) graphSVG.selectAll(".node text").attr("opacity", 3*scale-0.3);
-    }
+    };
+
     var zoom = MinimapZoom().scaleExtent([0.001, 2.0]).on("zoom", refreshViewport);
     zoom.call(this, rootSVG, minimapSVG);
     
@@ -47,7 +48,7 @@ function XTraceDAG(attachPoint, digraph, /*optional*/ params) {
       ty = ((h - bbox.height)/2 - bbox.y + 25)*scale;
       zoom.translate([tx, ty]).scale(scale);
       refreshViewport();
-    }
+    };
     
     // Attaches a context menu to any selected graph nodess
     function attachContextMenus() {
@@ -122,6 +123,7 @@ function XTraceDAG(attachPoint, digraph, /*optional*/ params) {
         var nodes = graphSVG.selectAll(".node");
         var edges = graphSVG.selectAll(".edge");
         var items = listSVG.selectAll(".item");
+        var edgelabels =  graphSVG.selectAll(".edgelabel");
     
         // Set up node selection events
         var select = Selectable().getrange(function(a, b) {
@@ -132,6 +134,9 @@ function XTraceDAG(attachPoint, digraph, /*optional*/ params) {
             graphSVG.selectAll(".node.selected").data().forEach(function(d) { selected[d.id]=true; });
             edges.classed("selected", function(d) {
                 return selected[d.source.id] && selected[d.target.id]; 
+            });
+            edgelabels.classed("selected", function(d) {
+                return selected[d.source.id] && selected[d.target.id];
             });
             attachContextMenus();
             DAGTooltip.hide();
@@ -147,6 +152,7 @@ function XTraceDAG(attachPoint, digraph, /*optional*/ params) {
                 graphSVG.classed("hovering", false);
                 edges.classed("hovered", false).classed("immediate", false);
                 nodes.classed("hovered", false).classed("immediate", false);
+                edgelabels.classed("hovered", false).classed("immediate", false);
             });
         }
         
@@ -185,7 +191,10 @@ function XTraceDAG(attachPoint, digraph, /*optional*/ params) {
             
             edges.classed("hovered", function(d) {
                 return pathlinks[d.source.id+d.target.id];            
-            })
+            });
+            edgelabels.classed("hovered", function(d) {
+                return pathlinks[d.source.id+d.target.id];
+            });
             nodes.classed("hovered", function(d) {
                 return pathnodes[d.id];
             });
@@ -204,7 +213,10 @@ function XTraceDAG(attachPoint, digraph, /*optional*/ params) {
             
             edges.classed("immediate", function(d) {
                 return immediatelinks[d.source.id+d.target.id];
-            })
+            });
+            edgelabels.classed("immediate", function(d) {
+                return immediatelinks[d.source.id+d.target.id];
+            });
             nodes.classed("immediate", function(d) {
                 return immediatenodes[d.id];
             })
