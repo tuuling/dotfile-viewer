@@ -229,6 +229,7 @@ var createGraphFromDigraph = function(digraph) {
             nodes[id].params.label = nodes[id].params.label.replace(/\\</g, '<').replace(/\\>/g, '>')
         }
 
+        nodes[id].params.isGroup = !!digraph.children(id).length;
     }
 
     // Second link the nodes together

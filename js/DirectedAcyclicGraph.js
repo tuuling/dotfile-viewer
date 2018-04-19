@@ -14,25 +14,29 @@ function DirectedAcyclicGraph() {
             
             // Size the chart
             svg.attr("width", width.call(this, data));
-            svg.attr("height", height.call(this, data));            
+            svg.attr("height", height.call(this, data));
             
             // Get the edges and nodes from the data.  Can have user-defined accessors
             var edges = getedges.call(this, data);
             var nodes = getnodes.call(this, data);
             var labels = getlabels.call(this, data);
-            
+
             // Get the existing nodes and edges, and recalculate the node size
             var existing_edges = svg.select(".graph").selectAll(".edge").data(edges, edgeid);
             var existing_nodes = svg.select(".graph").selectAll(".node").data(nodes, nodeid);
             var existing_labels = svg.select(".graph").selectAll(".edgelabel").data(labels, edgeid);
-            
+
             var removed_edges = existing_edges.exit();
             var removed_nodes = existing_nodes.exit();
             var removed_labels = existing_labels.exit();
-            
+
             var new_edges = existing_edges.enter().insert("path", ":first-child").attr("class", "edge entering");
             var new_nodes = existing_nodes.enter().append("g").attr("class", "node entering");
             var new_labels = existing_labels.enter().append("g").attr("class", "edgelabel");
+
+            new_nodes.classed('group', function (d) {
+               return d.params.isGroup;
+            });
 
             // Draw new nodes
             new_nodes.each(drawnode);
@@ -61,7 +65,16 @@ function DirectedAcyclicGraph() {
             }
             
             new_nodes.each(newnodetransition);
-            new_nodes.each(sizenodes);
+
+            new_nodes.filter('.group')
+                .each(positiongroup)
+                .each(function() {
+                    this.parentNode.insertBefore(this, this.parentNode.firstChild);
+                }).order(function (a, b) { //for some reason you need to do this to keep the order correct
+                    return null;
+                });
+
+
             new_labels.each(positionLabel);
             new_edges.attr("d", graph.splineGenerator).classed("visible", true);
             existing_nodes.classed("visible", true);
@@ -78,8 +91,6 @@ function DirectedAcyclicGraph() {
     /*
      * Settable variables and functions
      */
-    var width = d3.functor("100%");
-    var height = d3.functor("100%");
     var edgeid = function(d) { return d.source.id + d.target.id; };
     var nodeid = function(d) { return d.id; };
     var nodename = function(d) { return d.params.label; };
@@ -101,6 +112,7 @@ function DirectedAcyclicGraph() {
         }
     };
 
+
     var drawLabel = function(d) {
         var rect = d3.select(this).append("rect").attr("x", 0).attr("y", 0);
         var text = d3.select(this).append("text")
@@ -115,12 +127,15 @@ function DirectedAcyclicGraph() {
 
     };
 
-    var sizenodes = function (d) {
-        d3.select(this).select('rect')
+    var positiongroup = function (d) {
+        var rect = d3.select(this).select('rect')
             .attr("width", d.dagre.width)
-            .attr("height", d.dagre.height)
+            .attr("height", d.dagre.height + 30)
             .attr("x", -d.dagre.width/2)
-            .attr("y", -d.dagre.height/2);
+            .attr("y", (-d.dagre.height/2)-30);
+
+        d3.select(this).select('text')
+            .attr("y", rect.attr("y"));
     };
 
     var positionLabel = function (d) {
@@ -133,8 +148,8 @@ function DirectedAcyclicGraph() {
 
         var rect = d3.select(this).select('rect'),
             text = d3.select(this).select('text');
-        var text_bbox = {"height": 40, "width": 190};
-        var node_bbox = {"height": 50, "width": Math.max(200, text.node().getBBox().width  + 10)};
+        var text_bbox = {"height": 40, "width": text.node().getBBox().width};
+        var node_bbox = {"height": 50, "width": text.node().getBBox().width  + 10};
         rect.attr("x", -node_bbox.width/2).attr("y", -node_bbox.height/2);
         rect.attr("width", node_bbox.width).attr("height", node_bbox.height);
         text.attr("x", -text_bbox.width/2).attr("y", -node_bbox.height/2);
