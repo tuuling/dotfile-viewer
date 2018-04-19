@@ -1,0 +1,70 @@
+<html>
+<head>
+
+    <script type="text/javascript" src="js/compressed.js"></script>
+    <link href="stylesheets/xtrace.css" rel="stylesheet" type="text/css">
+    <!--<link href="stylesheets/tipsy.css" rel="stylesheet" type="text/css" />-->
+    <script>
+
+        var dotfile = 'digraph {\n' +
+            'v_254 [shape=box style=filled label="ship" fillcolor=red];\n' +
+            'v_255 [shape=box style=filled label="port" fillcolor=red];\n' +
+            'v_256 [shape=box style=filled label="parameters" fillcolor=red];\n' +
+            'v_260 [shape=box label="longitude" fillcolor=white];\n' +
+            'v_254 -> v_260;\n' +
+            'v_261 [shape=box label="latitude" fillcolor=white];\n' +
+            'v_254 -> v_261;\n' +
+            'v_262 [shape=box label="longitude" fillcolor=white];\n' +
+            'v_255 -> v_262;\n' +
+            'v_263 [shape=box label="latitude" fillcolor=white];\n' +
+            'v_255 -> v_263;\n' +
+            'v_259 [shape=box label="Δ" fillcolor=white];\n' +
+            'v_260 -> v_259 [label=1];\n' +
+            'v_261 -> v_259 [label=2];\n' +
+            'v_262 -> v_259 [label=3];\n' +
+            'v_263 -> v_259 [label=4];\n' +
+            'v_264 [shape=box label="maxspeed" fillcolor=white];\n' +
+            'v_254 -> v_264;\n' +
+            'v_258 [shape=box label="÷" fillcolor=white];\n' +
+            'v_259 -> v_258 [label=1];\n' +
+            'v_264 -> v_258 [label=2];\n' +
+            'v_257 [shape=box label="ceil" fillcolor=white];\n' +
+            'v_258 -> v_257;\n' +
+            'v_266 [shape=box label="name" fillcolor=white];\n' +
+            'v_254 -> v_266;\n' +
+            'v_267 [shape=box label="shipname" fillcolor=white];\n' +
+            'v_256 -> v_267;\n' +
+            'v_265 [shape=box label="=" fillcolor=white];\n' +
+            'v_266 -> v_265;\n' +
+            'v_267 -> v_265;\n' +
+            'v_269 [shape=box label="deadline" fillcolor=white];\n' +
+            'v_256 -> v_269;\n' +
+            'v_268 [shape=box label="≤" fillcolor=white];\n' +
+            'v_257 -> v_268 [label=1];\n' +
+            'v_269 -> v_268 [label=2];\n' +
+            'v_270[shape=box label="AND" fillcolor=white];\n' +
+            'v_265 -> v_270;\n' +
+            'v_268 -> v_270;\n' +
+            'v_271[shape=box label="Filter" fillcolor=blue style=filled];\n' +
+            'v_257 -> v_271 [label=1];\n' +
+            'v_270 -> v_271 [label=2];\n' +
+            '}';
+
+        window.onload = function() {
+
+            var digraph = graphlibDot.read(dotfile);
+            digraph.setGraph({
+                ranksep: 100
+            });
+
+            window.xtrace = new XTraceDAG(document.body, digraph);
+
+
+
+        }
+    </script>
+</head>
+<body width="100%" height="100%" style="margin: 0">
+
+</body>
+</html>
