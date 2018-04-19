@@ -52,12 +52,12 @@ function XTraceDAG(attachPoint, digraph, /*optional*/ params) {
     
     // Attaches a context menu to any selected graph nodess
     function attachContextMenus() {
-        DAGContextMenu.call(graphSVG.node(), graphSVG.selectAll(".node"));
+        DAGContextMenu.call(graphSVG.node(), graphSVG.selectAll(".node:not(.group)"));
         DAGContextMenu.on("open", function() {
             DAGTooltip.hide();
         }).on("close", function() {
             if (!lightweight) {
-                graphSVG.selectAll(".node").classed("preview", false);
+                graphSVG.selectAll(".node:not(.group)").classed("preview", false);
                 graphSVG.selectAll(".edge").classed("preview", false);
             }
         }).on("hidenodes", function(nodes, selectionname) {
@@ -86,7 +86,7 @@ function XTraceDAG(attachPoint, digraph, /*optional*/ params) {
             });
         }).on("hovernodes", function(nodes) {
             if (!lightweight) {
-                graphSVG.selectAll(".node").classed("preview", function(d) {
+                graphSVG.selectAll(".node:not(.group)").classed("preview", function(d) {
                     return nodes.indexOf(d)!=-1;
                 })
                 var previewed = {};
@@ -98,7 +98,7 @@ function XTraceDAG(attachPoint, digraph, /*optional*/ params) {
         }).on("selectnodes", function(nodes) {
             var selected = {};
             nodes.forEach(function(d) { selected[d.id]=true; });
-            graphSVG.selectAll(".node").classed("selected", function(d) {
+            graphSVG.selectAll(".node:not(.group)").classed("selected", function(d) {
                 var selectme = selected[d.id];
                 if (d3.event.ctrlKey) selectme = selectme || d3.select(this).classed("selected");
                 return selectme;
@@ -120,7 +120,7 @@ function XTraceDAG(attachPoint, digraph, /*optional*/ params) {
     
     // A function that attaches mouse-click events to nodes to enable node selection
     function setupEvents(){
-        var nodes = graphSVG.selectAll(".node");
+        var nodes = graphSVG.selectAll(".node.node:not(.group)");
         var edges = graphSVG.selectAll(".edge");
         var items = listSVG.selectAll(".item");
         var edgelabels =  graphSVG.selectAll(".edgelabel");
