@@ -50,21 +50,57 @@
             'v_270 -> v_271 [label=2];\n' +
             '}';
 
-        window.onload = function() {
+        window.open_xtrace = function(data) {
 
             var digraph = graphlibDot.read(dotfile);
             digraph.setGraph({
-                ranksep: 100
+                ranksep: 100,
+                marginx: 50,
+                marginy: 50
             });
 
-            window.xtrace = new XTraceDAG(document.body, digraph);
+            var overlay = $('<div id="xtrace-overlay" style="\n' +
+                '    position: absolute;\n' +
+                '    height: 100%;\n' +
+                '    width: 100%;\n' +
+                '    background: white;\n' +
+                '    top: 0;\n' +
+                '    left: 0;\n' +
+                '"><').appendTo(document.body);
 
+            var closebutton = $('<div id="closebutton" style="\n' +
+                '    position: absolute;\n' +
+                '    top: 20px;\n' +
+                '    left: 20px;\n' +
+                '    font-size: 20px;\n' +
+                '    font-family: verdana;\n' +
+                '    background: #ffbebe;\n' +
+                '    padding: 14px;\n' +
+                '    border-radius: 14px;\n' +
+                '    cursor: pointer;\n' +
+                '">\n' +
+                '    X Close graph\n' +
+                '</div>');
 
+            closebutton.on('click', function () {
+               overlay.remove();
+            });
 
-        }
+            overlay.append(closebutton);
+
+            new XTraceDAG(overlay[0], digraph);
+
+        };
+
+        $( document ).ready(function() {
+            $('#opengraph').on('click', function () {
+                open_xtrace(dotfile);
+            });
+        });
+
     </script>
 </head>
 <body width="100%" height="100%" style="margin: 0">
-
+    <button id="opengraph">Open graph</button>
 </body>
 </html>

@@ -36,14 +36,22 @@ window.onload = function() {
             ranker: $("#graph-ranker").val()
         });
 
-        window.xtrace = new XTraceDAG(document.body, digraph);
-
+        // window.xtrace = new XTraceDAG(document.body, digraph);
+        window.xtrace = new XTraceDAG($('#xtrace-overlay')[0], digraph);
     })
 
 }
-</script>
+</script>b
 </head>
 <body width="100%" height="100%" style="margin: 0">
+    <div id="xtrace-overlay" style="
+        position: absolute;
+        height: 100%;
+        width: 100%;
+        background: blue;
+        top: 0;
+        left: 0;
+    "></div>
     <div style="position: absolute;">
         <textarea id="dotfile" name="" cols="30" rows="10"></textarea><br>
         <label for="graph-ranker">ranker: </label>
